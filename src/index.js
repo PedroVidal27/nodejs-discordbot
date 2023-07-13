@@ -13,13 +13,13 @@ const client = new Client({
 	]
 });
 
-const player = new MusicPlayer();
+const music = new MusicPlayer();
 
 client.on("interactionCreate", async (interaction) => {
 	if (!interaction.isChatInputCommand()) return;
 
 	if (interaction.commandName === "play") {
-		
+		music.playMusic(client, interaction);
 	}
 
 	if (interaction.commandName === "leave") {
