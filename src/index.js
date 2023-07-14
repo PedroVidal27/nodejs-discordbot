@@ -1,5 +1,5 @@
 require("dotenv").config();
-const { Client, IntentsBitField } = require("discord.js");
+const { Client, IntentsBitField, EmbedBuilder } = require("discord.js");
 const { getVoiceConnection } = require("@discordjs/voice");
 const { playMusic, MusicPlayer } = require("./music-player");
 
@@ -13,18 +13,30 @@ const client = new Client({
 	]
 });
 
-const music = new MusicPlayer();
+const music = new MusicPlayer(client);
+const musicProgress = new EmbedBuilder()
+	.setTitle("Música!")
+	.setThumbnail("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQhtLA6Pz4nNbkTG3WrDrWFfp3BEmhL3kadFEmtauw64w&s")
+	.setDescription("Lallala teste")
+	.setColor("#ff0000")
+	.setFooter({
+		text: "Himari!",
+		iconUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQhtLA6Pz4nNbkTG3WrDrWFfp3BEmhL3kadFEmtauw64w&s"
+	});
 
 client.on("interactionCreate", async (interaction) => {
 	if (!interaction.isChatInputCommand()) return;
 
 	if (interaction.commandName === "play") {
-		music.playMusic(client, interaction);
+		music.playMusic(interaction);
 	}
 
 	if (interaction.commandName === "leave") {
-		const connection = getVoiceConnection(interaction.guildId);
-		connection.disconnect();
+		music.debug(interaction);
+	}
+
+	if (interaction.commandName === "skip") {
+		music.playNextMusic(interaction, false);
 	}
 });
 

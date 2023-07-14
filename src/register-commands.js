@@ -16,7 +16,11 @@ const commands = [
 	},
 	{
 		name: "leave",
-		description: "Bye bye!",
+		description: "Bye bye!"
+	},
+	{
+		name: "skip",
+		description: "Skip to the next music!"
 	}
 ];
 
