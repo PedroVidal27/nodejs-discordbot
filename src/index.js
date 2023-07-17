@@ -1,7 +1,8 @@
 require("dotenv").config();
 const { Client, IntentsBitField, EmbedBuilder } = require("discord.js");
+const { MusicPlayer } = require("./music-player");
 const { getVoiceConnection } = require("@discordjs/voice");
-const { playMusic, MusicPlayer } = require("./music-player");
+const { musicReactions } = require("./bot-reactions");
 
 const client = new Client({
 	intents: [
@@ -14,15 +15,6 @@ const client = new Client({
 });
 
 const music = new MusicPlayer(client);
-const musicProgress = new EmbedBuilder()
-	.setTitle("Música!")
-	.setThumbnail("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQhtLA6Pz4nNbkTG3WrDrWFfp3BEmhL3kadFEmtauw64w&s")
-	.setDescription("Lallala teste")
-	.setColor("#ff0000")
-	.setFooter({
-		text: "Himari!",
-		iconUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQhtLA6Pz4nNbkTG3WrDrWFfp3BEmhL3kadFEmtauw64w&s"
-	});
 
 client.on("interactionCreate", async (interaction) => {
 	if (!interaction.isChatInputCommand()) return;
@@ -32,7 +24,20 @@ client.on("interactionCreate", async (interaction) => {
 	}
 
 	if (interaction.commandName === "leave") {
-		music.debug(interaction);
+		music.deletePlayer(interaction);
+		const connection = getVoiceConnection(interaction.guildId);
+		if (connection) {
+			connection.destroy();
+			const leaveVoiceChannelEmbed = new EmbedBuilder()
+				.setTitle("Hmpf!")
+				.setThumbnail(musicInfo.videoDetails.thumbnails[0].url)
+				.setDescription(musicReactions.leave[Math.floor(Math.random() * musicReactions.leave.length)])
+				.setColor("#ffff00")
+				.setFooter({
+					text: "ヽ(｀Д´)ﾉ"
+				});
+			interaction.reply({ embeds: [leaveVoiceChannelEmbed] });
+		}
 	}
 
 	if (interaction.commandName === "skip") {

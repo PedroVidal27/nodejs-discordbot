@@ -1,39 +1,32 @@
 const ytdl = require("ytdl-core");
 const { EmbedBuilder } = require("discord.js");
 const { createAudioResource, joinVoiceChannel, createAudioPlayer, AudioPlayerStatus } = require("@discordjs/voice");
+const { musicReactions } = require("./bot-reactions");
 
 class MusicPlayer {
 	constructor(client) {
 		this.players = [];
-		this.playlists = [];
 		this.client = client;
 	}
 
-	debug = async (interaction) => {
-		this.playNextMusic(interaction);
-	};
-
 	addToPlaylist = async (interaction) => {
-		const playlistIndex = this.playlists.findIndex((playlist) => playlist.id === interaction.guildId);
-		if (playlistIndex != -1) {
-			const playlist = this.playlists[playlistIndex].playlist;
+		const playerIndex = this.players.findIndex((player) => player.id === interaction.guildId);
+		if (playerIndex != -1) {
+			const playlist = this.players[playerIndex].playlist;
 			const musicInfo = await ytdl.getInfo(interaction.options.get("youtube-link").value);
 			playlist.push(interaction.options.get("youtube-link").value);
 			const addMusicEmbed = new EmbedBuilder()
 				.setTitle(musicInfo.videoDetails.title)
 				.setThumbnail(musicInfo.videoDetails.thumbnails[0].url)
-				.setDescription("Música Adicionada à Playlist")
+				.setDescription(musicReactions.addMusic[Math.floor(Math.random() * musicReactions.addMusic.length)])
 				.setColor("#ffff00")
 				.setFooter({
-					text: "❤️"
+					text: "(・`ω´・)"
 				});
 			interaction.reply({ embeds: [addMusicEmbed] });
 			return;
 		}
-		this.playlists.push({
-			playlist: [],
-			id: interaction.guildId
-		});
+		this.newPlayer();
 		this.addToPlaylist(interaction);
 		return;
 	};
@@ -44,11 +37,11 @@ class MusicPlayer {
 		if (playerIndex != -1) {
 			return;
 		}
-		this.players.push({ player: createAudioPlayer(), id: interaction.guildId });
+		this.players.push({ player: createAudioPlayer(), playlist: [], id: interaction.guildId, mode: "linear" });
 	};
 
-	deletePlayer = async (guildId) => {
-		const playerIndex = this.players.findIndex((player) => player.id === guildId);
+	deletePlayer = async (interaction) => {
+		const playerIndex = this.players.findIndex((player) => player.id === interaction.guildId);
 		// if we can't find the player, we don't need to remove it
 		if (playerIndex === -1) {
 			return;
@@ -58,36 +51,43 @@ class MusicPlayer {
 
 	playNextMusic = async (interaction, isAutoSkipping) => {
 		const playerIndex = this.players.findIndex((player) => player.id === interaction.guildId);
-		const playlistIndex = this.playlists.findIndex((playlist) => playlist.id === interaction.guildId);
 		if (playerIndex === -1) {
-			console.log("Player not found!");
-			return;
-		}
-		if (playlistIndex === -1) {
-			console.log("Playlist not found!");
+			console.error("Player not found!");
 			return;
 		}
 		const player = this.players[playerIndex].player;
-		const playlist = this.playlists[playlistIndex].playlist;
-		const nextMusic = playlist.pop();
+		const playlist = this.players[playerIndex].playlist;
+		const nextMusic = playlist[1];
+		const currentMusic = playlist.shift();
+		if (this.players[playerIndex].mode === "loop") {
+			playlist.push(currentMusic);
+		}
 		const musicInfo = await ytdl.getInfo(nextMusic);
-		const nextMusicEmbed = new EmbedBuilder()
-			.setTitle(musicInfo.videoDetails.title)
-			.setThumbnail(musicInfo.videoDetails.thumbnails[0].url)
-			.setDescription("Próxima Música da Playlist!")
-			.setColor("#ffff00")
-			.setFooter({
-				text: "❤️"
-			});
 		const stream = await ytdl(nextMusic, { filter: "audioonly" });
 		const resource = createAudioResource(stream, { seek: 0, volume: 1 });
 		player.play(resource);
 		if (isAutoSkipping) {
 			const channel = await this.client.channels.fetch(interaction.channelId);
+			const nextMusicEmbed = new EmbedBuilder()
+				.setTitle(musicInfo.videoDetails.title)
+				.setThumbnail(musicInfo.videoDetails.thumbnails[0].url)
+				.setDescription(musicReactions.nextMusic[Math.floor(Math.random() * musicReactions.nextMusic.length)])
+				.setColor("#ffff00")
+				.setFooter({
+					text: "(//ω//)"
+				});
 			channel.send({ embeds: [nextMusicEmbed] });
 			return;
 		}
-		interaction.reply({ embeds: [nextMusicEmbed] });
+		const skipEmbed = new EmbedBuilder()
+			.setTitle(musicInfo.videoDetails.title)
+			.setThumbnail(musicInfo.videoDetails.thumbnails[0].url)
+			.setDescription(musicReactions.skipMusic[Math.floor(Math.random() * musicReactions.skipMusic.length)])
+			.setColor("#ffff00")
+			.setFooter({
+				text: "ヽ(｀⌒´メ)ノ"
+			});
+		interaction.reply({ embeds: [skipEmbed] });
 		return;
 	};
 
@@ -95,6 +95,7 @@ class MusicPlayer {
 		const playerIndex = this.players.findIndex((player) => player.id === interaction.guildId);
 		if (playerIndex != -1) {
 			const player = this.players[playerIndex].player;
+			const playlist = this.players[playerIndex].playlist;
 			if (player.state.status === "playing") {
 				this.addToPlaylist(interaction);
 				return;
@@ -108,19 +109,20 @@ class MusicPlayer {
 				const musicInfo = await ytdl.getInfo(interaction.options.get("youtube-link").value);
 				const stream = await ytdl(interaction.options.get("youtube-link").value, { filter: "audioonly" });
 				const resource = createAudioResource(stream, { seek: 0, volume: 1 });
+				playlist.push(interaction.options.get("youtube-link").value);
 				player.play(resource);
 				const musicStartsEmbed = new EmbedBuilder()
 					.setTitle(musicInfo.videoDetails.title)
 					.setThumbnail(musicInfo.videoDetails.thumbnails[0].url)
-					.setDescription("Música Iniciada!")
+					.setDescription(musicReactions.startMusic[Math.floor(Math.random() * musicReactions.startMusic.length)])
 					.setColor("#ffff00")
 					.setFooter({
-						text: "❤️"
+						text: "(￣ε￣＠)"
 					});
 				interaction.reply({ embeds: [musicStartsEmbed] });
 				player.on("error", (error) => {
 					console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
-					player.play(getNextResource());
+					this.playNextMusic(interaction, true);
 				});
 				player.on(AudioPlayerStatus.Idle, () => {
 					this.playNextMusic(interaction, true);
@@ -132,18 +134,6 @@ class MusicPlayer {
 		}
 		this.newPlayer(interaction);
 		this.playMusic(interaction);
-	};
-
-	buildPlayerEmbed = (musicInfo) => {
-		const musicProgress = new EmbedBuilder()
-			.setTitle(musicInfo.videoDetails.title)
-			.setThumbnail(musicInfo.videoDetails.thumbnails[0].url)
-			.setDescription("Música Adicionada!")
-			.setColor("#ffff00")
-			.setFooter({
-				text: "❤️"
-			});
-		return musicProgress;
 	};
 }
 
