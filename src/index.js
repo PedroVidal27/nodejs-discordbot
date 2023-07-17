@@ -1,8 +1,9 @@
 require("dotenv").config();
 const { Client, IntentsBitField, EmbedBuilder } = require("discord.js");
-const { MusicPlayer } = require("./music-player");
 const { getVoiceConnection } = require("@discordjs/voice");
+
 const { musicReactions } = require("./bot-reactions");
+const { MusicPlayer } = require("./music-player");
 
 const client = new Client({
 	intents: [
@@ -23,6 +24,10 @@ client.on("interactionCreate", async (interaction) => {
 		music.playMusic(interaction);
 	}
 
+	if (interaction.commandName === "mode") {
+		music.changeMode(interaction);
+	}
+
 	if (interaction.commandName === "leave") {
 		music.deletePlayer(interaction);
 		const connection = getVoiceConnection(interaction.guildId);
@@ -30,7 +35,6 @@ client.on("interactionCreate", async (interaction) => {
 			connection.destroy();
 			const leaveVoiceChannelEmbed = new EmbedBuilder()
 				.setTitle("Hmpf!")
-				.setThumbnail(musicInfo.videoDetails.thumbnails[0].url)
 				.setDescription(musicReactions.leave[Math.floor(Math.random() * musicReactions.leave.length)])
 				.setColor("#ffff00")
 				.setFooter({
@@ -42,6 +46,19 @@ client.on("interactionCreate", async (interaction) => {
 
 	if (interaction.commandName === "skip") {
 		music.playNextMusic(interaction, false);
+	}
+
+	if (interaction.commandName === "leaveAllServers") {
+		const guilds = await client.guilds.fetch(); // Fetch all guilds the bot is a member of
+		guilds.forEach(async (guild) => {
+			try {
+				const guildLeave = await client.guilds.fetch(guild.id);
+				console.log(guildLeave);
+				await guildLeave.leave();
+			} catch (error) {
+				console.error(`Failed to leave guild: ${guild.name}`, error);
+			}
+		});
 	}
 });
 

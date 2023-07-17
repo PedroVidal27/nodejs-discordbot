@@ -1,20 +1,22 @@
-const ytdl = require("ytdl-core");
 const { EmbedBuilder } = require("discord.js");
 const { createAudioResource, joinVoiceChannel, createAudioPlayer, AudioPlayerStatus } = require("@discordjs/voice");
+
 const { musicReactions } = require("./bot-reactions");
+const { Music } = require("./music-domain");
 
 class MusicPlayer {
 	constructor(client) {
 		this.players = [];
 		this.client = client;
+		this.music = new Music();
 	}
 
 	addToPlaylist = async (interaction) => {
 		const playerIndex = this.players.findIndex((player) => player.id === interaction.guildId);
 		if (playerIndex != -1) {
 			const playlist = this.players[playerIndex].playlist;
-			const musicInfo = await ytdl.getInfo(interaction.options.get("youtube-link").value);
-			playlist.push(interaction.options.get("youtube-link").value);
+			const musicInfo = await this.music.getInfo(interaction.options.get("url").value);
+			playlist.push(interaction.options.get("url").value);
 			const addMusicEmbed = new EmbedBuilder()
 				.setTitle(musicInfo.videoDetails.title)
 				.setThumbnail(musicInfo.videoDetails.thumbnails[0].url)
@@ -31,22 +33,49 @@ class MusicPlayer {
 		return;
 	};
 
-	newPlayer = async (interaction) => {
+	newPlayer = (interaction) => {
 		const playerIndex = this.players.findIndex((player) => player.id === guildId);
 		//if we find the player, we don't need to create one
 		if (playerIndex != -1) {
 			return;
 		}
-		this.players.push({ player: createAudioPlayer(), playlist: [], id: interaction.guildId, mode: "linear" });
+		this.players.push({ player: createAudioPlayer(), playlist: [], id: interaction.guildId, mode: "loop" });
 	};
 
-	deletePlayer = async (interaction) => {
+	deletePlayer = (interaction) => {
 		const playerIndex = this.players.findIndex((player) => player.id === interaction.guildId);
 		// if we can't find the player, we don't need to remove it
 		if (playerIndex === -1) {
 			return;
 		}
 		this.players.splice(playerIndex, 1);
+	};
+
+	changeMode = (interaction) => {
+		const mode = interaction.options.get("mode").value;
+		const playerIndex = this.players.findIndex((player) => player.id === interaction.guildId);
+		this.players[playerIndex].mode = mode;
+		if (mode === "linear") {
+			const changeModeEmbed = new EmbedBuilder()
+				.setTitle("A vida não é linear...")
+				.setDescription(musicReactions.changeModeLinear[Math.floor(Math.random() * musicReactions.changeModeLinear.length)])
+				.setColor("#ffff00")
+				.setFooter({
+					text: "┐(￣ヘ￣;)┌ "
+				});
+			interaction.reply({ embeds: [changeModeEmbed] });
+		}
+		if (mode === "loop") {
+			const changeModeEmbed = new EmbedBuilder()
+				.setTitle("Round n' Round")
+				.setDescription(musicReactions.changeModeLoop[Math.floor(Math.random() * musicReactions.changeModeLoop.length)])
+				.setColor("#ffff00")
+				.setFooter({
+					text: "(¬_¬)"
+				});
+			interaction.reply({ embeds: [changeModeEmbed] });
+		}
+		return;
 	};
 
 	playNextMusic = async (interaction, isAutoSkipping) => {
@@ -62,8 +91,8 @@ class MusicPlayer {
 		if (this.players[playerIndex].mode === "loop") {
 			playlist.push(currentMusic);
 		}
-		const musicInfo = await ytdl.getInfo(nextMusic);
-		const stream = await ytdl(nextMusic, { filter: "audioonly" });
+		const musicInfo = await this.music.getInfo(nextMusic);
+		const stream = await this.music.getStream(nextMusic);
 		const resource = createAudioResource(stream, { seek: 0, volume: 1 });
 		player.play(resource);
 		if (isAutoSkipping) {
@@ -101,33 +130,44 @@ class MusicPlayer {
 				return;
 			}
 			if (player.state.status === "idle") {
-				const connection = joinVoiceChannel({
-					channelId: interaction.member.voice.channel.id,
-					guildId: interaction.guildId,
-					adapterCreator: interaction.guild.voiceAdapterCreator
-				});
-				const musicInfo = await ytdl.getInfo(interaction.options.get("youtube-link").value);
-				const stream = await ytdl(interaction.options.get("youtube-link").value, { filter: "audioonly" });
-				const resource = createAudioResource(stream, { seek: 0, volume: 1 });
-				playlist.push(interaction.options.get("youtube-link").value);
-				player.play(resource);
-				const musicStartsEmbed = new EmbedBuilder()
-					.setTitle(musicInfo.videoDetails.title)
-					.setThumbnail(musicInfo.videoDetails.thumbnails[0].url)
-					.setDescription(musicReactions.startMusic[Math.floor(Math.random() * musicReactions.startMusic.length)])
-					.setColor("#ffff00")
-					.setFooter({
-						text: "(￣ε￣＠)"
+				if (this.music.validateUrl(interaction.options.get("url").value)) {
+					const connection = joinVoiceChannel({
+						channelId: interaction.member.voice.channel.id,
+						guildId: interaction.guildId,
+						adapterCreator: interaction.guild.voiceAdapterCreator
 					});
-				interaction.reply({ embeds: [musicStartsEmbed] });
-				player.on("error", (error) => {
-					console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
-					this.playNextMusic(interaction, true);
-				});
-				player.on(AudioPlayerStatus.Idle, () => {
-					this.playNextMusic(interaction, true);
-				});
-				connection.subscribe(player);
+					const musicInfo = await this.music.getInfo(interaction.options.get("url").value);
+					const stream = await this.music.getStream(interaction.options.get("url").value);
+					const resource = createAudioResource(stream, { seek: 0, volume: 1 });
+					playlist.push(interaction.options.get("url").value);
+					player.play(resource);
+					const musicStartsEmbed = new EmbedBuilder()
+						.setTitle(musicInfo.videoDetails.title)
+						.setThumbnail(musicInfo.videoDetails.thumbnails[0].url)
+						.setDescription(musicReactions.startMusic[Math.floor(Math.random() * musicReactions.startMusic.length)])
+						.setColor("#ffff00")
+						.setFooter({
+							text: "(￣ε￣＠)"
+						});
+					interaction.reply({ embeds: [musicStartsEmbed] });
+					player.on("error", (error) => {
+						console.error(`Error: ${error}`);
+						this.playNextMusic(interaction, true);
+					});
+					player.on(AudioPlayerStatus.Idle, () => {
+						this.playNextMusic(interaction, true);
+					});
+					connection.subscribe(player);
+					return;
+				}
+				const musicInvalidEmbed = new EmbedBuilder()
+					.setTitle("Ei!!!")
+					.setDescription(musicReactions.invalidYoutubeURL[Math.floor(Math.random() * musicReactions.invalidYoutubeURL.length)])
+					.setColor("#ff0000")
+					.setFooter({
+						text: "(ノ｀Д´)ノ彡┻━┻"
+					});
+				interaction.reply({ embeds: [musicInvalidEmbed] });
 				return;
 			}
 			return;

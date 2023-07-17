@@ -4,23 +4,45 @@ const { REST, Routes, ApplicationCommandOptionType } = require("discord.js");
 const commands = [
 	{
 		name: "play",
-		description: "Play music from YouTube!",
+		description: "Se você me der a URL correta de um vídeo do YouTube, vou extrair o áudio e tocar a música para você.",
 		options: [
 			{
-				name: "youtube-link",
-				description: "YouTube link",
+				name: "url",
+				description: "URL do Youtube",
 				type: ApplicationCommandOptionType.String,
 				required: true
 			}
 		]
 	},
 	{
+		name: "mode",
+		description: "Posso alternar entre o modo linear e loop.",
+		options: [
+			{
+				name: "mode",
+				description: "Modo desejado",
+				type: ApplicationCommandOptionType.String,
+				choices: [
+					{
+						name: "linear",
+						value: "linear"
+					},
+					{
+						name: "loop",
+						value: "loop"
+					}
+				],
+				required: true
+			}
+		]
+	},
+	{
 		name: "leave",
-		description: "Bye bye!"
+		description: "Hmpf!"
 	},
 	{
 		name: "skip",
-		description: "Skip to the next music!"
+		description: "Vou pular a música pra você."
 	}
 ];
 
