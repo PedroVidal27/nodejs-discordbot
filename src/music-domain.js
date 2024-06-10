@@ -1,18 +1,18 @@
-const ytdl = require("ytdl-core");
+const play = require("play-dl");
 
 class Music {
 	constructor() {}
 
 	getInfo = async (url) => {
-		return await ytdl.getInfo(url);
+		return await play.getInfo(url);
 	};
 
 	getStream = async (url) => {
-		return await ytdl(url, { filter: "audioonly" });
+		return await play(url, { filter: "audioonly" });
 	};
 
 	validateUrl = (url) => {
-		return ytdl.validateURL(url);
+		return play.validateURL(url);
 	};
 }
 
