@@ -154,8 +154,8 @@ class MusicPlayer {
 					playlist.push(interaction.options.get("url").value);
 					player.play(resource);
 					const musicStartsEmbed = new EmbedBuilder()
-						.setTitle(musicInfo.videoDetails.title)
-						.setThumbnail(musicInfo.videoDetails.thumbnails[0].url)
+						.setTitle(musicInfo.title)
+						.setThumbnail(musicInfo.thumbnailUrl)
 						.setDescription(musicReactions.startMusic[Math.floor(Math.random() * musicReactions.startMusic.length)])
 						.setColor("#ffff00")
 						.setFooter({

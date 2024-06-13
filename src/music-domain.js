@@ -4,11 +4,16 @@ class Music {
 	constructor() {}
 
 	getInfo = async (url) => {
-		return await play.getInfo(url);
+		const videoInfo = await play.video_info(url);
+		const myInfo = {
+			thumbnailUrl: videoInfo.video_details.thumbnails[0].url,
+			title: videoInfo.video_details.title
+		}
+		return myInfo
 	};
 
 	getStream = async (url) => {
-		return await play(url, { filter: "audioonly" });
+		return await play.stream(url);
 	};
 
 	validateUrl = async (url) => {
