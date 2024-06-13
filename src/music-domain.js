@@ -11,8 +11,8 @@ class Music {
 		return await play(url, { filter: "audioonly" });
 	};
 
-	validateUrl = (url) => {
-		return play.validateURL(url);
+	validateUrl = async (url) => {
+		return await play.validate(url) === 'yt_video';
 	};
 }
 

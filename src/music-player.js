@@ -131,6 +131,7 @@ class MusicPlayer {
 			}
 			if (player.state.status === "idle") {
 				if (this.music.validateUrl(interaction.options.get("url").value)) {
+					console.log("Passou!")
 					const connection = joinVoiceChannel({
 						channelId: interaction.member.voice.channel.id,
 						guildId: interaction.guildId,
