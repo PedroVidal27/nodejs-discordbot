@@ -18,8 +18,8 @@ class MusicPlayer {
 			const musicInfo = await this.music.getInfo(interaction.options.get("url").value);
 			playlist.push(interaction.options.get("url").value);
 			const addMusicEmbed = new EmbedBuilder()
-				.setTitle(musicInfo.videoDetails.title)
-				.setThumbnail(musicInfo.videoDetails.thumbnails[0].url)
+				.setTitle(musicInfo.title)
+				.setThumbnail(musicInfo.thumbnailUrl)
 				.setDescription(musicReactions.addMusic[Math.floor(Math.random() * musicReactions.addMusic.length)])
 				.setColor("#ffff00")
 				.setFooter({
@@ -93,7 +93,9 @@ class MusicPlayer {
 		}
 		const musicInfo = await this.music.getInfo(nextMusic);
 		const stream = await this.music.getStream(nextMusic);
-		const resource = createAudioResource(stream, { seek: 0, volume: 1 });
+		const resource = createAudioResource(stream.stream, {
+            inputType: stream.type
+        });
 		player.play(resource);
 		if (isAutoSkipping) {
 			const channel = await this.client.channels.fetch(interaction.channelId);
@@ -109,8 +111,8 @@ class MusicPlayer {
 			return;
 		}
 		const skipEmbed = new EmbedBuilder()
-			.setTitle(musicInfo.videoDetails.title)
-			.setThumbnail(musicInfo.videoDetails.thumbnails[0].url)
+			.setTitle(musicInfo.title)
+			.setThumbnail(musicInfo.thumbnailUrl)
 			.setDescription(musicReactions.skipMusic[Math.floor(Math.random() * musicReactions.skipMusic.length)])
 			.setColor("#ffff00")
 			.setFooter({
@@ -150,7 +152,9 @@ class MusicPlayer {
 					});
 					const musicInfo = await this.music.getInfo(interaction.options.get("url").value);
 					const stream = await this.music.getStream(interaction.options.get("url").value);
-					const resource = createAudioResource(stream);
+					const resource = createAudioResource(stream.stream, {
+						inputType: stream.type
+					});
 					playlist.push(interaction.options.get("url").value);
 					player.play(resource);
 					const musicStartsEmbed = new EmbedBuilder()

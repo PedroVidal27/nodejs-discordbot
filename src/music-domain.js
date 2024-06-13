@@ -13,7 +13,11 @@ class Music {
 	};
 
 	getStream = async (url) => {
-		return await play.stream(url).stream;
+		const stream = await play.stream(url);
+		return {
+			stream: stream.stream,
+			type: stream.type
+		};
 	};
 
 	validateUrl = async (url) => {
