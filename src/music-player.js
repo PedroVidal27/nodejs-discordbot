@@ -137,12 +137,12 @@ class MusicPlayer {
 			const player = this.players[playerIndex].player;
 			const playlist = this.players[playerIndex].playlist;
 			if (player.state.status === "playing") {
-				if (this.music.validateUrl(interaction.options.get("url").value)) invalidUrl();
+				if (!this.music.validateUrl(interaction.options.get("url").value)) invalidUrl();
 				this.addToPlaylist(interaction);
 				return;
 			}
 			if (player.state.status === "idle") {
-				if (this.music.validateUrl(interaction.options.get("url").value)) invalidUrl();
+				if (!this.music.validateUrl(interaction.options.get("url").value)) invalidUrl();
 					const connection = joinVoiceChannel({
 						channelId: interaction.member.voice.channel.id,
 						guildId: interaction.guildId,
@@ -150,7 +150,7 @@ class MusicPlayer {
 					});
 					const musicInfo = await this.music.getInfo(interaction.options.get("url").value);
 					const stream = await this.music.getStream(interaction.options.get("url").value);
-					const resource = createAudioResource(stream, { seek: 0, volume: 1 });
+					const resource = createAudioResource(stream);
 					playlist.push(interaction.options.get("url").value);
 					player.play(resource);
 					const musicStartsEmbed = new EmbedBuilder()
@@ -171,7 +171,6 @@ class MusicPlayer {
 					});
 					connection.subscribe(player);
 					return;
-				return;
 			}
 			return;
 		}

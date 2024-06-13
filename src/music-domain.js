@@ -13,7 +13,7 @@ class Music {
 	};
 
 	getStream = async (url) => {
-		return await play.stream(url);
+		return await play.stream(url).stream;
 	};
 
 	validateUrl = async (url) => {
