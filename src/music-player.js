@@ -121,17 +121,28 @@ class MusicPlayer {
 	};
 
 	playMusic = async (interaction) => {
+		const musicInvalidEmbed = new EmbedBuilder()
+								  .setTitle("Ei!!!")
+								  .setDescription(musicReactions.invalidYoutubeURL[Math.floor(Math.random() * musicReactions.invalidYoutubeURL.length)])
+								  .setColor("#ff0000")
+								  .setFooter({text: "(ノ｀Д´)ノ彡┻━┻"});
+
+		const invalidUrl = () => {
+			interaction.reply({ embeds: [musicInvalidEmbed] });
+			return;
+		}
+
 		const playerIndex = this.players.findIndex((player) => player.id === interaction.guildId);
 		if (playerIndex != -1) {
 			const player = this.players[playerIndex].player;
 			const playlist = this.players[playerIndex].playlist;
 			if (player.state.status === "playing") {
+				if (this.music.validateUrl(interaction.options.get("url").value)) invalidUrl();
 				this.addToPlaylist(interaction);
 				return;
 			}
 			if (player.state.status === "idle") {
-				if (this.music.validateUrl(interaction.options.get("url").value)) {
-					console.log("Passou!")
+				if (this.music.validateUrl(interaction.options.get("url").value)) invalidUrl();
 					const connection = joinVoiceChannel({
 						channelId: interaction.member.voice.channel.id,
 						guildId: interaction.guildId,
@@ -160,15 +171,6 @@ class MusicPlayer {
 					});
 					connection.subscribe(player);
 					return;
-				}
-				const musicInvalidEmbed = new EmbedBuilder()
-					.setTitle("Ei!!!")
-					.setDescription(musicReactions.invalidYoutubeURL[Math.floor(Math.random() * musicReactions.invalidYoutubeURL.length)])
-					.setColor("#ff0000")
-					.setFooter({
-						text: "(ノ｀Д´)ノ彡┻━┻"
-					});
-				interaction.reply({ embeds: [musicInvalidEmbed] });
 				return;
 			}
 			return;
