@@ -48,7 +48,7 @@ const commands = [
 
 const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
 
-(async () => {
+const registerCommands = async () => {
 	try {
 		console.log("Registering commands...");
 		await rest.put(Routes.applicationCommands(process.env.CLIENT_ID), { body: commands });
@@ -56,4 +56,6 @@ const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
 	} catch (error) {
 		console.error(`There was an error: ${error}`);
 	}
-})();
+};
+
+module.exports = { registerCommands };

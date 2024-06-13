@@ -3,6 +3,7 @@ const { Client, IntentsBitField, EmbedBuilder } = require("discord.js");
 const { getVoiceConnection } = require("@discordjs/voice");
 
 const { musicReactions } = require("./bot-reactions");
+const { registerCommands } = require("./register-commands");
 const { MusicPlayer } = require("./music-player");
 
 const client = new Client({
@@ -16,6 +17,8 @@ const client = new Client({
 });
 
 const music = new MusicPlayer(client);
+
+registerCommands();
 
 client.on("interactionCreate", async (interaction) => {
 	if (!interaction.isChatInputCommand()) return;
