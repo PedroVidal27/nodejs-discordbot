@@ -34,6 +34,18 @@ const musicReactions = {
 		"Você quer que eu mude para o modo loop? Fazer a mesma música tocar repetidamente... que tedioso!",
 		"Então você decidiu colocar o modo loop? Fazendo a música se repetir incessantemente... ",
 		"Mudando para o modo loop, é? Como se eu me importasse com essa repetição interminável."
+	],
+	changeModeRandom: [
+		"Ah, modo aleatório? Como se você soubesse o que quer...",
+		"Vai querer o modo random? Que seja, mas não me culpe se a playlist ficar estranha!",
+		"Você realmente quer tudo bagunçado, né? Ok, modo aleatório ativado.",
+		"Então você quer o modo random? Espero que esteja preparado para surpresas.",
+		"Modo aleatório? Hmph, talvez isso deixe as coisas interessantes... ou não.",
+		"Quer mesmo a aleatoriedade? Tá, tá, vou mudar para o modo random.",
+		"Mudando para o modo random, só porque você pediu!",
+		"Modo random? Que imprevisível de sua parte... Vamos ver o que acontece.",
+		"Você quer o modo aleatório? Espero que saiba o que está fazendo.",
+		"Modo random ativado. Só não venha reclamar depois!"
 	]
 };
 

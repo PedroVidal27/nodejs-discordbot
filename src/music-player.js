@@ -75,6 +75,16 @@ class MusicPlayer {
 				});
 			interaction.reply({ embeds: [changeModeEmbed] });
 		}
+		if (mode === "random") {
+			const changeModeEmbed = new EmbedBuilder()
+				.setTitle("RANDOOOOM!!!")
+				.setDescription(musicReactions.changeModeLoop[Math.floor(Math.random() * musicReactions.changeModeLoop.length)])
+				.setColor("#ffff00")
+				.setFooter({
+					text: "(｀ε´)"
+				});
+			interaction.reply({ embeds: [changeModeEmbed] });
+		}
 		return;
 	};
 
@@ -88,7 +98,7 @@ class MusicPlayer {
 		const playlist = this.players[playerIndex].playlist;
 		const nextMusic = playlist[1];
 		const currentMusic = playlist.shift();
-		if (this.players[playerIndex].mode === "loop") {
+		if (this.players[playerIndex].mode === ("loop" || "random")) {
 			playlist.push(currentMusic);
 		}
 		const musicInfo = await this.music.getInfo(nextMusic);
@@ -100,8 +110,8 @@ class MusicPlayer {
 		if (isAutoSkipping) {
 			const channel = await this.client.channels.fetch(interaction.channelId);
 			const nextMusicEmbed = new EmbedBuilder()
-				.setTitle(musicInfo.videoDetails.title)
-				.setThumbnail(musicInfo.videoDetails.thumbnails[0].url)
+				.setTitle(musicInfo.title)
+				.setThumbnail(musicInfo.thumbnailUrl)
 				.setDescription(musicReactions.nextMusic[Math.floor(Math.random() * musicReactions.nextMusic.length)])
 				.setColor("#ffff00")
 				.setFooter({

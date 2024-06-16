@@ -30,6 +30,10 @@ const commands = [
 					{
 						name: "loop",
 						value: "loop"
+					},
+					{
+						name: "random",
+						value: "random"
 					}
 				],
 				required: true
